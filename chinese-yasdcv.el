@@ -338,6 +338,7 @@
         (org-indent-mode))
       (insert translate-text))))
 
+;;;###autoload
 (defun yasdcv-translate-at-point ()
   "Translate current word at point with sdcv"
   (interactive)
