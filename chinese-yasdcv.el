@@ -1,4 +1,4 @@
-;;; chinese-yasdcv.el --- Yet another frontend for the sdcv StarDict command-line program
+;;; chinese-yasdcv.el --- Yet another frontend for the StarDict command-line program
 
 ;; Copyright (c) 2015, Feng Shu
 

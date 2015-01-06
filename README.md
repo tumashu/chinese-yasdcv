@@ -1,4 +1,4 @@
-# chinese-yasdcv - Yet another sdcv emacs frontend (sdcv: Console version of StarDict program)
+# chinese-yasdcv - Yet another frontend for the StarDict command-line program
 
 *Author:* Feng Shu <tumashu@gmail.com><br>
 *Version:* 0.0.1<br>
