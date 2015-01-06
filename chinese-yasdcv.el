@@ -73,6 +73,7 @@
 ;; 光标处字符对应的词语。
 
 ;;; Code:
+(require 'cl)
 
 (defgroup chinese-yasdcv nil
   "Yet another sdcv emacs frontend (sdcv: Console version of StarDict program)"
