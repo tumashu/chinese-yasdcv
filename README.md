@@ -13,24 +13,11 @@ Chinese-yasdcv 是 sdcv 的一个emacs前端，其工作原理是：
 注：sdcv 是 StarDict 的 Console 版本，yasdcv 表示：Yet Another Sdcv。
 
 # 安装 #
-将这个文件放到任意一个emacs搜索目录之下，然后在~/.emacs中添加：
-
-```lisp
-(require 'chinese-yasdcv)
-```
-
-另外, 也可以使用 `package-install` 安装，首先添加 melpa 源：
-
-```lisp
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/") t)
-```
-
-然后运行命令：
-
-M-x package-install RET chinese-yasdcv RET
-
-最后在 emacs 配置文件中添加如下代码。
+1. 安装 sdcv 程序（比如： sudo apt-get install sdcv）。
+2. 从网上寻找 StarDict 字典文件，按需下载。
+3. 配置melpa源，参考：http://melpa.org/#/getting-started。
+4. M-x package-install RET chinese-yasdcv RET
+5. 在emacs配置文件中（比如: ~/.emacs）添加如下代码：
 
 ```lisp
 (require 'chinese-yasdcv)
