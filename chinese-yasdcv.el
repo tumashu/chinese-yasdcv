@@ -165,10 +165,12 @@
   "Predicate Chinese word from CURRENT-WORD from CURRENT-OFFSET."
   (let ((a 0) (b 0))
     (dolist (word (split-string
-                   (shell-command-to-string
-                    (replace-regexp-in-string
-                     "%string" current-word
-                     yasdcv-chinese-wordsplit-command))))
+                   (replace-regexp-in-string
+                    "/[a-zA-z]+ +" " " ; Clean scws's output
+                    (shell-command-to-string
+                     (replace-regexp-in-string
+                      "%string" current-word
+                      yasdcv-chinese-wordsplit-command)))))
       (cl-incf b (length word))
       (if (<= a current-offset b)
           (cl-return word)
