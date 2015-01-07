@@ -60,7 +60,7 @@
 ;; 光标处字符对应的词语。
 
 ;;; Code:
-(require 'cl)
+(require 'cl-lib)
 
 (defgroup chinese-yasdcv nil
   "Yet another sdcv emacs frontend (sdcv: Console version of StarDict program)"
@@ -155,7 +155,7 @@
   "Get English word or Chinese word at point"
   (let ((word (current-word t t))
         (current-char (string (preceding-char))))
-    (or (car (remove-if-not
+    (or (car (cl-remove-if-not
               #'(lambda (x) (string-match-p current-char x))
               (split-string
                (replace-regexp-in-string
