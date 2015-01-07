@@ -60,7 +60,7 @@
 ;; 光标处字符对应的词语。
 
 ;;; Code:
-(require 'cl)
+(require 'cl-lib)
 
 (defgroup chinese-yasdcv nil
   "Yet another sdcv emacs frontend (sdcv: Console version of StarDict program)"
@@ -73,8 +73,11 @@
   :type 'string)
 
 (defcustom yasdcv-chinese-wordsplit-command
-  "/usr/local/scws/bin/scws -c utf-8 -N -A -I -d /usr/local/scws/etc/dict.utf8.xdb -i %string"
-  "设置中文分词命令，命令调用之前，%string 将会替换为需要分词的字符串。"
+  "echo %string | python -m jieba -q -d ' '"
+  "设置中文分词命令，命令调用之前，%string 将会替换为需要分词的字符串。
+使用jieba (结巴分词): \"echo %string | python -m jieba -q -d ' '\"
+使用scws: \"/usr/local/scws/bin/scws -c utf-8 -N -A -I -d /usr/local/scws/etc/dict.utf8.xdb -i %string\"
+如果不使用任何分词工具，设置成空字符串。"
   :group 'chinese-yasdcv
   :type 'string)
 
@@ -151,19 +154,38 @@
   :group 'chinese-yasdcv
   :type 'list)
 
+(defun yasdcv--chinese-word-prediction (current-word current-offset)
+  "Predicate Chinese word from CURRENT-WORD from CURRENT-OFFSET."
+  (let ((a 0) (b 0))
+    (dolist (word (split-string (shell-command-to-string
+                                 (format yasdcv-chinese-wordsplit-command
+                                         current-word))))
+      (cl-incf b (length word))
+      (if (<= a current-offset b)
+          (cl-return word)
+        (setq a b)))))
+
+(defun yasdcv--offset-in-current-word ()
+  "Get offset in current word."
+  (let* ((boundary (bounds-of-thing-at-point 'word))
+         (beginning-pos (car boundary))
+         (end-pos (cdr boundary))
+         (current-pos (point)))
+    (if (= current-pos end-pos)
+        (- end-pos beginning-pos)
+      (1+ (- current-pos beginning-pos)))))
+
 (defun yasdcv--current-word ()
-  "Get English word or Chinese word at point"
-  (let ((word (current-word t t))
-        (current-char (string (preceding-char))))
-    (or (car (remove-if-not
-              #'(lambda (x) (string-match-p current-char x))
-              (split-string
-               (replace-regexp-in-string
-                "/[a-zA-z]+ +" " "
-                (shell-command-to-string
-                 (replace-regexp-in-string
-                  "%string" (or word ",") yasdcv-chinese-wordsplit-command))))))
-        word "")))
+  "Get English word or Chinese word at point."
+  (let ((case-fold-search t)
+        (current-word (thing-at-point 'word t))
+        (current-char (string (following-char))))
+    (if (or (string-match-p "\\`[a-z]*\\'" current-word)
+            (zerop (length yasdcv-chinese-wordsplit-command)))
+        current-word                    ; English word or
+                                        ; don't use any Chinese word segmentation tools
+      (yasdcv--chinese-word-prediction  ; Chinese word
+       current-word (yasdcv--offset-in-current-word)))))
 
 (defun yasdcv--return-output-cleaner-function (name)
   (intern (concat "yasdcv--output-cleaner:" name)))
