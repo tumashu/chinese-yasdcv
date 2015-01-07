@@ -178,7 +178,7 @@
 (defun yasdcv--current-word ()
   "Get English word or Chinese word at point."
   (let ((case-fold-search t)
-        (current-word (thing-at-point 'word))
+        (current-word (thing-at-point 'word t))
         (current-char (string (following-char))))
     (if (or (string-match-p "\\`[a-z]*\\'" current-word)
             (zerop (length yasdcv-chinese-wordsplit-command)))
