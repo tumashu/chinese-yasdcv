@@ -75,9 +75,16 @@
 (defcustom yasdcv-chinese-wordsplit-command
   "echo %string | python -m jieba -q -d ' '"
   "设置中文分词命令，命令调用之前，%string 将会替换为需要分词的字符串。
-使用jieba (结巴分词): \"echo %string | python -m jieba -q -d ' '\"
-使用scws: \"/usr/local/scws/bin/scws -c utf-8 -N -A -I -d /usr/local/scws/etc/dict.utf8.xdb -i %string\"
-如果不使用任何分词工具，设置成空字符串。"
+
+1. 使用jieba (结巴分词)：
+
+   \"echo %string | python -m jieba -q -d ' '\"
+
+2. 使用scws:
+
+   \"/usr/local/scws/bin/scws -c utf-8 -N -A -I -d /usr/local/scws/etc/dict.utf8.xdb -i %string\"
+
+3. 如果不使用任何分词工具，设置成空字符串。"
   :group 'chinese-yasdcv
   :type 'string)
 
@@ -157,9 +164,11 @@
 (defun yasdcv--chinese-word-prediction (current-word current-offset)
   "Predicate Chinese word from CURRENT-WORD from CURRENT-OFFSET."
   (let ((a 0) (b 0))
-    (dolist (word (split-string (shell-command-to-string
-                                 (format yasdcv-chinese-wordsplit-command
-                                         current-word))))
+    (dolist (word (split-string
+                   (shell-command-to-string
+                    (replace-regexp-in-string
+                     "%string" current-word
+                     yasdcv-chinese-wordsplit-command))))
       (cl-incf b (length word))
       (if (<= a current-offset b)
           (cl-return word)
