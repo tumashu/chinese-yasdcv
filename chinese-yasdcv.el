@@ -72,15 +72,12 @@
   :group 'chinese-yasdcv
   :type 'string)
 
-(defcustom yasdcv-swcw-chinese-wordsplit-command
-  "/usr/local/scws/bin/scws -c utf-8 -N -A -I -d /usr/local/scws/etc/dict.utf8.xdb -i %string"
-  "设置 scws 的中文分词命令，命令调用之前，%string 将会替换为需要分词的字符串。"
-  :group 'chinese-yasdcv
-  :type 'string)
-
-(defcustom yasdcv-jieba-chinese-wordsplit-command
+(defcustom yasdcv-chinese-wordsplit-command
   "echo %string | python -m jieba -q -d ' '"
-  "设置 jieba(结巴分词) 的中文分词命令，命令调用之前，%string 将会替换为需要分词的字符串。"
+  "设置中文分词命令，命令调用之前，%string 将会替换为需要分词的字符串。
+使用jieba (结巴分词): \"echo %string | python -m jieba -q -d ' '\"
+使用scws: \"/usr/local/scws/bin/scws -c utf-8 -N -A -I -d /usr/local/scws/etc/dict.utf8.xdb -i %string\"
+如果不使用任何分词工具，设置成空字符串。"
   :group 'chinese-yasdcv
   :type 'string)
 
@@ -161,7 +158,7 @@
   "Predicate Chinese word from CURRENT-WORD from CURRENT-OFFSET."
   (let ((a 0) (b 0))
     (dolist (word (split-string (shell-command-to-string
-                                 (format yasdcv-jieba-chinese-wordsplit-command
+                                 (format yasdcv-chinese-wordsplit-command
                                          current-word))))
       (cl-incf b (length word))
       (if (<= a current-offset b)
@@ -183,8 +180,10 @@
   (let ((case-fold-search t)
         (current-word (thing-at-point 'word))
         (current-char (string (following-char))))
-    (if (string-match-p "\\`[a-z]*\\'" current-word)
-        current-word                    ; English word
+    (if (or (string-match-p "\\`[a-z]*\\'" current-word)
+            (zerop (length yasdcv-chinese-wordsplit-command)))
+        current-word                    ; English word or
+                                        ; don't use any Chinese word segmentation tools
       (yasdcv--chinese-word-prediction  ; Chinese word
        current-word (yasdcv--offset-in-current-word)))))
 
