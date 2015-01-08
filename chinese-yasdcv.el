@@ -4,6 +4,7 @@
 
 ;; Author: Feng Shu <tumashu@gmail.com>
 ;; URL: https://github.com/tumashu/chinese-yasdcv
+;; Package-Requires: ((cl-lib "0.5"))
 ;; Version: 0.0.1
 
 ;; This file is not part of GNU Emacs.
