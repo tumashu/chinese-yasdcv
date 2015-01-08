@@ -379,7 +379,8 @@
     (if (or (not translate) (string= translate ""))
         (message "Can't translate the word: %s" word)
       (yasdcv--buffer-output-translation translate))
-    (when (zerop (length yasdcv-chinese-wordsplit-command))
+    (when (and (string-match-p "\\cc" word)
+               (zerop (length yasdcv-chinese-wordsplit-command)))
       (message yasdcv--minibuffer-string))))
 
 (provide 'chinese-yasdcv)
