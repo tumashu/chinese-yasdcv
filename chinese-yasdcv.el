@@ -161,6 +161,14 @@
   :group 'chinese-yasdcv
   :type 'list)
 
+(defvar yasdcv--minibuffer-string
+  "“中文点词翻译”需要外部中文分词系统的配合才可以良好的工作，目前 Chinese-yasdcv 可以支持：
+
+1. jieba (结巴中文分词)       https://github.com/fxsjy/jieba
+2. SCWS （简易中文分词系统）  http://www.xunsearch.com/scws/
+
+请任选一个安装，安装完成后按照说明设置变量 `yasdcv-chinese-wordsplit-command'")
+
 (defun yasdcv--execute-wordsplit-command (current-word)
   (replace-regexp-in-string
    "/[a-zA-z]+ +" " " ; Clean scws's output
@@ -195,17 +203,7 @@
         (current-char (string (following-char))))
     (cond
      ((string-match-p "\\`[a-z]*\\'" current-word) current-word)
-     ((zerop (length yasdcv-chinese-wordsplit-command))
-      (warn "
-“中文点词翻译”需要外部中文分词系统的配合，目前 Chinese-yasdcv 可以支持：
-
-1. jieba (结巴中文分词)       https://github.com/fxsjy/jieba
-2. SCWS （简易中文分词系统）  http://www.xunsearch.com/scws/
-
-请任选一个安装。
-
-安装完成后设置变量 `yasdcv-chinese-wordsplit-command'")
-      current-word)
+     ((zerop (length yasdcv-chinese-wordsplit-command)) current-word)
      (t (yasdcv--chinese-word-prediction
          current-word (yasdcv--offset-in-current-word))))))
 
@@ -380,7 +378,9 @@
          (translate (yasdcv--get-translate word)))
     (if (or (not translate) (string= translate ""))
         (message "Can't translate the word: %s" word)
-      (yasdcv--buffer-output-translation translate))))
+      (yasdcv--buffer-output-translation translate))
+    (when (zerop (length yasdcv-chinese-wordsplit-command))
+      (message yasdcv--minibuffer-string))))
 
 (provide 'chinese-yasdcv)
 
