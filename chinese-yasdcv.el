@@ -72,8 +72,7 @@
   :group 'chinese-yasdcv
   :type 'string)
 
-(defcustom yasdcv-chinese-wordsplit-command
-  "echo %string | python -m jieba -q -d ' '"
+(defcustom yasdcv-chinese-wordsplit-command ""
   "设置中文分词命令，命令调用之前，%string 将会替换为需要分词的字符串。
 
 1. 使用jieba (结巴分词)：
@@ -161,16 +160,18 @@
   :group 'chinese-yasdcv
   :type 'list)
 
+(defun yasdcv--execute-wordsplit-command (current-word)
+  (replace-regexp-in-string
+   "/[a-zA-z]+ +" " " ; Clean scws's output
+   (shell-command-to-string
+    (replace-regexp-in-string
+     "%string" current-word
+     yasdcv-chinese-wordsplit-command))))
+
 (defun yasdcv--chinese-word-prediction (current-word current-offset)
   "Predicate Chinese word from CURRENT-WORD from CURRENT-OFFSET."
   (let ((a 0) (b 0))
-    (dolist (word (split-string
-                   (replace-regexp-in-string
-                    "/[a-zA-z]+ +" " " ; Clean scws's output
-                    (shell-command-to-string
-                     (replace-regexp-in-string
-                      "%string" current-word
-                      yasdcv-chinese-wordsplit-command)))))
+    (dolist (word (split-string (yasdcv--execute-wordsplit-command current-word)))
       (cl-incf b (length word))
       (if (<= a current-offset b)
           (cl-return word)
@@ -191,12 +192,21 @@
   (let ((case-fold-search t)
         (current-word (thing-at-point 'word t))
         (current-char (string (following-char))))
-    (if (or (string-match-p "\\`[a-z]*\\'" current-word)
-            (zerop (length yasdcv-chinese-wordsplit-command)))
-        current-word                    ; English word or
-                                        ; don't use any Chinese word segmentation tools
-      (yasdcv--chinese-word-prediction  ; Chinese word
-       current-word (yasdcv--offset-in-current-word)))))
+    (cond
+     ((string-match-p "\\`[a-z]*\\'" current-word) current-word)
+     ((zerop (length yasdcv-chinese-wordsplit-command))
+      (warn "
+“中文点词翻译”需要外部中文分词系统的配合，目前 Chinese-yasdcv 可以支持：
+
+1. jieba (结巴中文分词)       https://github.com/fxsjy/jieba
+2. SCWS （简易中文分词系统）  http://www.xunsearch.com/scws/
+
+请任选一个安装。
+
+安装完成后设置变量 `yasdcv-chinese-wordsplit-command'")
+      current-word)
+     (t (yasdcv--chinese-word-prediction
+         current-word (yasdcv--offset-in-current-word))))))
 
 (defun yasdcv--return-output-cleaner-function (name)
   (intern (concat "yasdcv--output-cleaner:" name)))
