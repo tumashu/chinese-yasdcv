@@ -341,7 +341,7 @@
         (when (re-search-forward word nil t)
           (buffer-string))))))
 
-(defun yasdcv--get-translate (word &optional dict-key indent)
+(defun yasdcv--get-translate (word &optional dict-key)
   "Return sdcv translate string of `word'"
   (with-temp-buffer
     (insert (mapconcat
@@ -353,9 +353,6 @@
                           (string-match-p dict-key (nth 1 dict)))
                       (yasdcv--get-sdcv-output word dict t))))
              yasdcv-sdcv-dicts ""))
-    (when (and indent (featurep 'org))
-      (org-mode)
-      (org-indent-region (point-min) (point-max)))
     (buffer-string)))
 
 (defun yasdcv--buffer-output-translation (translate-text)
