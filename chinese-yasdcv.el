@@ -4,7 +4,7 @@
 
 ;; Author: Feng Shu <tumashu@gmail.com>
 ;; URL: https://github.com/tumashu/chinese-yasdcv
-;; Package-Requires: ((cl-lib "0.5"))
+;; Package-Requires: ((cl-lib "0.5") (chinese-pyim "0.0.1"))
 ;; Version: 0.0.1
 ;; Keywords: convenience, Chinese, dictionary
 
@@ -56,13 +56,13 @@
 ;; 将光标移动到需要查询的单词上（点词翻译），然后运行命令 `yasdcv-translate-at-point'，
 ;; 或者选择某一个单词（划词翻译），然后运行上述命令。
 ;;
-;; 查询中文时，划词翻译可以正常使用，但由于 emacs 本身的限制，点词翻译往往不能正常工作。
-;; 这时，就需要用户通过变量 `yasdcv-chinese-wordsplit-command' 来设置外部的分词程序。
-;; Chinese-yasdcv 会提取一个范围较大的字符串，通过分词程序将其分成多个词语，然后再查询
-;; 光标处字符对应的词语。
+;; 查询中文时，划词翻译可以正常使用，点词翻译要用到 Chinese-pyim 包中的命令
+;;`pyim-get-words-list-at-point', 需要用户正确安装 Chinese-pyim 并添加配置拼音词库。
+;; 具体细节请阅读 Chinese-pyim 的相关文档：http://tumashu.github.io/chinese-pyim/
 
 ;;; Code:
 (require 'cl-lib)
+(require 'chinese-pyim)
 
 (defgroup chinese-yasdcv nil
   "Yet another sdcv emacs frontend (sdcv: Console version of StarDict program)"
@@ -71,21 +71,6 @@
 (defcustom yasdcv-sdcv-command
   "sdcv --non-interactive --utf8-output --utf8-input --use-dict \"%dict\" \"%word\""
   "设置sdcv命令，命令调用之前，%dict 将会替换为字典名称，%word 替换为需要查询的 word。"
-  :group 'chinese-yasdcv
-  :type 'string)
-
-(defcustom yasdcv-chinese-wordsplit-command ""
-  "设置中文分词命令，命令调用之前，%string 将会替换为需要分词的字符串。
-
-1. 使用jieba (结巴分词)：
-
-   \"echo %string | python -m jieba -q -d ' '\"
-
-2. 使用scws:
-
-   \"/usr/local/scws/bin/scws -c utf-8 -N -A -I -d /usr/local/scws/etc/dict.utf8.xdb -i %string\"
-
-3. 如果不使用任何分词工具，设置成空字符串。"
   :group 'chinese-yasdcv
   :type 'string)
 
@@ -161,52 +146,6 @@
     4. 第四个元素表示字典是否激活。"
   :group 'chinese-yasdcv
   :type 'list)
-
-(defvar yasdcv--minibuffer-string
-  "“中文点词翻译”需要外部中文分词系统的配合才可以良好的工作，目前 Chinese-yasdcv 可以支持：
-
-1. jieba (结巴中文分词)       https://github.com/fxsjy/jieba
-2. SCWS （简易中文分词系统）  http://www.xunsearch.com/scws/
-
-请任选一个安装，安装完成后按照说明设置变量 `yasdcv-chinese-wordsplit-command'")
-
-(defun yasdcv--execute-wordsplit-command (current-word)
-  (replace-regexp-in-string
-   "/[a-zA-z]+ +" " " ; Clean scws's output
-   (shell-command-to-string
-    (replace-regexp-in-string
-     "%string" current-word
-     yasdcv-chinese-wordsplit-command))))
-
-(defun yasdcv--chinese-word-prediction (current-word current-offset)
-  "Predicate Chinese word from CURRENT-WORD from CURRENT-OFFSET."
-  (let ((a 0) (b 0))
-    (dolist (word (split-string (yasdcv--execute-wordsplit-command current-word)))
-      (cl-incf b (length word))
-      (if (<= a current-offset b)
-          (cl-return word)
-        (setq a b)))))
-
-(defun yasdcv--offset-in-current-word ()
-  "Get offset in current word."
-  (let* ((boundary (bounds-of-thing-at-point 'word))
-         (beginning-pos (car boundary))
-         (end-pos (cdr boundary))
-         (current-pos (point)))
-    (if (= current-pos end-pos)
-        (- end-pos beginning-pos)
-      (1+ (- current-pos beginning-pos)))))
-
-(defun yasdcv--current-word ()
-  "Get English word or Chinese word at point."
-  (let ((case-fold-search t)
-        (current-word (thing-at-point 'word t))
-        (current-char (string (following-char))))
-    (cond
-     ((string-match-p "\\`[a-z]*\\'" current-word) current-word)
-     ((zerop (length yasdcv-chinese-wordsplit-command)) current-word)
-     (t (yasdcv--chinese-word-prediction
-         current-word (yasdcv--offset-in-current-word))))))
 
 (defun yasdcv--return-output-cleaner-function (name)
   (intern (concat "yasdcv--output-cleaner:" name)))
@@ -369,17 +308,21 @@
 (defun yasdcv-translate-at-point ()
   "Translate current word at point with sdcv"
   (interactive)
-  (let* ((word (or (if mark-active
-                       (buffer-substring-no-properties
-                        (region-beginning) (region-end))
-                     (yasdcv--current-word)) ""))
-         (translate (yasdcv--get-translate word)))
-    (if (or (not translate) (string= translate ""))
-        (message "Can't translate the word: %s" word)
-      (yasdcv--buffer-output-translation translate))
-    (when (and (string-match-p "\\cc" word)
-               (zerop (length yasdcv-chinese-wordsplit-command)))
-      (message yasdcv--minibuffer-string))))
+  (let* ((current-words (pyim-get-words-list-at-point))
+         (word (if mark-active
+                   (buffer-substring-no-properties
+                    (region-beginning) (region-end))
+                 (if (> (length current-words) 1)
+                     (completing-read "翻译哪一个词： " (mapcar #'car current-words))
+                   (car (car current-words)))))
+         (translate (when word
+                      (yasdcv--get-translate word))))
+    (cond
+     ((not word)
+      (message "Can't find word at point."))
+     ((or (not translate) (string= translate ""))
+      (message "Can't translate the word: \"%s\"" word))
+     (t (yasdcv--buffer-output-translation translate)))))
 
 (provide 'chinese-yasdcv)
 
