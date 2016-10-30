@@ -28,11 +28,11 @@
 ;;; Commentary:
 ;;
 ;; # 简介 #
-;; Chinese-yasdcv 是 sdcv 的一个emacs前端，其工作原理是：
+;; Chinese-yasdcv 是 sdcv 的一个 emacs 前端，其工作原理是：
 ;;
 ;; 1. 调用 sdcv 程序，将翻译得到的结果定向到 *Stardict Output* buffer。
 ;; 2. 调用对应的elisp函数，清理上述 buffer 中的内容，并将其转化为 org-mode 格式。
-;; 3. 弹出一个窗口显示上述buffer内容。
+;; 3. 弹出一个窗口显示上述 buffer 内容。
 ;;
 ;; 注：sdcv 是 StarDict 的 Console 版本，yasdcv 表示：Yet Another Sdcv。
 ;;
