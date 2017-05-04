@@ -334,7 +334,7 @@
                     (region-beginning) (region-end))
                  (car (car current-words))))
          (input-word (read-string (format "Input: ")
-                                  (sdcv-region-or-word) nil nil))
+                                  word nil nil))
          (translate (yasdcv--get-translate input-word)))
 
     (cond
