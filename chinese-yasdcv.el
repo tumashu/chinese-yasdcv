@@ -324,6 +324,24 @@
       (message "Can't translate the word: \"%s\"" word))
      (t (yasdcv--buffer-output-translation translate)))))
 
+;;;###autoload
+(defun yasdcv-translate-input ()
+  "Translate the input word with sdcv"
+  (interactive)
+  (let* ((current-words (pyim-cwords-at-point))
+         (word (if mark-active
+                   (buffer-substring-no-properties
+                    (region-beginning) (region-end))
+                 (car (car current-words))))
+         (input-word (read-string (format "Input: ")
+                                  (sdcv-region-or-word) nil nil))
+         (translate (yasdcv--get-translate input-word)))
+
+    (cond
+     ((or (not translate) (string= translate ""))
+      (message "Can't translate the word: \"%s\"" input-word))
+     (t (yasdcv--buffer-output-translation translate)))))
+
 (provide 'chinese-yasdcv)
 
 ;; Local Variables:
