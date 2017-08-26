@@ -4,7 +4,7 @@
 
 ;; Author: Feng Shu <tumashu@gmail.com>
 ;; URL: https://github.com/tumashu/chinese-yasdcv
-;; Package-Requires: ((cl-lib "0.5") (chinese-pyim "0.0.1"))
+;; Package-Requires: ((cl-lib "0.5") (pyim "1.6.0"))
 ;; Version: 0.0.1
 ;; Keywords: convenience, Chinese, dictionary
 
@@ -62,7 +62,7 @@
 
 ;;; Code:
 (require 'cl-lib)
-(require 'chinese-pyim)
+(require 'pyim)
 
 (defgroup chinese-yasdcv nil
   "Yet another sdcv emacs frontend (sdcv: Console version of StarDict program)"
