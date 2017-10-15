@@ -1,10 +1,10 @@
-- [简介](#org46073da)
-  - [安装](#org83441ee)
-  - [配置](#org97b5973)
-  - [使用](#org1b52ae8)
+- [简介](#org13054c0)
+  - [安装](#org8d60802)
+  - [配置](#orgb62dcc4)
+  - [使用](#org4c9f108)
 
 
-<a id="org46073da"></a>
+<a id="org13054c0"></a>
 
 # 简介
 
@@ -17,7 +17,7 @@ yasdcv 是 sdcv 的一个 emacs 前端，其工作原理是：
 注：sdcv 是 StarDict 的 Console 版本，yasdcv 表示：Yet Another Sdcv。
 
 
-<a id="org83441ee"></a>
+<a id="org8d60802"></a>
 
 ## 安装
 
@@ -30,7 +30,7 @@ yasdcv 是 sdcv 的一个 emacs 前端，其工作原理是：
         (require 'yasdcv)
 
 
-<a id="org97b5973"></a>
+<a id="orgb62dcc4"></a>
 
 ## 配置
 
@@ -38,13 +38,13 @@ yasdcv 是 sdcv 的一个 emacs 前端，其工作原理是：
 2.  设置 \`yasdcv-sdcv-dicts' (具体细节见变量说明)
 
 
-<a id="org1b52ae8"></a>
+<a id="org4c9f108"></a>
 
 ## 使用
 
 将光标移动到需要查询的单词上（点词翻译），然后运行命令 \`yasdcv-translate-at-point'， 或者选择某一个单词（划词翻译），然后运行上述命令。
 
-查询中文时，划词翻译可以正常使用，点词翻译要用到 Chinese-pyim 包中的命令 \`pyim-cwords-at-point', 需要用户正确安装 Chinese-pyim 并添加配置拼音词库。 具体细节请阅读 Chinese-pyim 的相关文档：<http://tumashu.github.io/chinese-pyim/>
+查询中文时，划词翻译可以正常使用，点词翻译要用到 pyim 包中的命令 \`pyim-cwords-at-point', 需要用户正确安装 pyim 并添加配置拼音词库。 具体细节请阅读 pyim 的相关文档：<http://tumashu.github.io/pyim/>
 
 
 Converted from yasdcv.el by [el2org](https://github.com/tumashu/el2org) .
